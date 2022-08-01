@@ -1,10 +1,10 @@
 import telegram
 import requests
 from bs4 import BeautifulSoup
+import time
 
 bot = telegram.Bot(token = "5433279502:AAF1snTj1bPTAjLwYj5BFfvgsZKDvN7tT84")
 id = '@AlarmBotmadeEunbae'
-# so_id = 5083993056
 
 
 def create_soup(url) :
@@ -72,6 +72,37 @@ def sports_news() :
                          (f"{index+1}. {title}\n") +
                          (f"    (링크 : {link})")
         )
+
+def baseball_match() :
+    url = "https://sports.news.naver.com/kbaseball/index"
+    soup = create_soup(url)
+
+
+    kboMatch = soup.find_all("div", id="_tab_box_kbo")[0]
+    kboMatchItems = kboMatch.find("div", class_="hmb_list").find_all("li", class_="hmb_list_items")
+    bot.send_message(id, "[야구 경기 예정 및 결과]\n")
+    for item in kboMatchItems : 
+            leftItemBox = item.find(class_="vs_list vs_list1").find(class_="inner")
+            global leftScore
+            try :
+                leftScore = leftItemBox.find("div", class_="score").stripped_strings
+                leftScore = ("".join(leftScore))
+            except :
+                leftScore = 0
+            leftName = leftItemBox.find("span", class_="name").text
+            leftPitcher = leftItemBox.find_all("span")[2].text
+
+            rightItemBox = item.find(class_="vs_list vs_list2").find(class_="inner")
+            global rightScore
+            try :
+                rightScore = rightItemBox.find("div", class_="score").stripped_strings
+                rightScore = ("".join(rightScore))
+            except :
+                rightScore = 0
+            rightName = rightItemBox.find("span", class_="name").text
+            rightPitcher = rightItemBox.find_all("span")[2].text
+            bot.send_message(id, f"(선발 : {leftPitcher})\t {leftName}\t {leftScore} vs {rightScore}\t {rightName}\t (선발 : {rightPitcher})")
+            time.sleep(3)
     
 
 weather()
