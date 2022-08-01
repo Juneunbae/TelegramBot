@@ -48,7 +48,7 @@ def scrap_news() :
     url = "https://media.naver.com/press/001"
     soup = create_soup(url)
 
-    main_news = soup.find("ul", attrs={"class" : "press_news_list as_bottom"}).find_all("li")
+    main_news = soup.find("ul", attrs={"class" : "press_news_list as_bottom"}).find_all("li", limit=5)
     for index, news in enumerate(main_news) :
         title = news.find("a").get_text().strip()
         link = news.find("a")["href"]
@@ -72,16 +72,7 @@ def sports_news() :
                          (f"{index+1}. {title}\n") +
                          (f"    (링크 : {link})")
         )
-       
-    sports2 = soup.find("ul", attrs={"class" : "home_news_list division"}).find_all("li")
-    for index2, news2 in enumerate(sports2) :
-        title2 = news2.find("a").get_text().strip()
-        link2 = world_football_url + news2.find("a")['href']
-        bot.send_message(id, text =
-                         "[오늘의 해외축구] \n" +
-                         (f"{index2+11}. {title2} \n") +
-                         (f"    (링크 : {link2})")
-        )
+    
 
 weather()
 scrap_news()
