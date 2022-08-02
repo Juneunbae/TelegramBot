@@ -1,11 +1,12 @@
 import telegram
 import requests
 from bs4 import BeautifulSoup
+import schedule
 import time
 
 bot = telegram.Bot(token = "5433279502:AAF1snTj1bPTAjLwYj5BFfvgsZKDvN7tT84")
 id = '@AlarmBotmadeEunbae'
-
+eun_id = 5085254544
 
 def create_soup(url) :
     res = requests.get(url)
@@ -35,7 +36,7 @@ def weather() :
     # 미세먼지
     air = soup.find("li", attrs={"class" : "item_today level2"}).get_text().strip()
     bot.send_message(id, text=
-                    "[오늘의 날씨] \n"  +
+                    "[오늘의 날씨 알려드립니다.] \n"  +
                     (f"{temps[1:6]} : {temps[7:]}") +
                     (f"[{temps_rate}] \n") +
                     (f"  :  {cast} \n") +
@@ -48,7 +49,7 @@ def scrap_news() :
     url = "https://media.naver.com/press/001"
     soup = create_soup(url)
 
-    main_news = soup.find("ul", attrs={"class" : "press_news_list as_bottom"}).find_all("li", limit=5)
+    main_news = soup.find("ul", attrs={"class" : "press_news_list as_bottom"}).find_all("li")
     for index, news in enumerate(main_news) :
         title = news.find("a").get_text().strip()
         link = news.find("a")["href"]
@@ -57,6 +58,101 @@ def scrap_news() :
                             (f"{index + 1}. {title} \n") +
                             (f"    (링크 : {link})")
         )
+        time.sleep(10)
+    
+def baseball_match() :
+    url = "https://sports.news.naver.com/kbaseball/index"
+    soup = create_soup(url)
+
+
+    kboMatch = soup.find_all("div", id="_tab_box_kbo")[0]
+    kboMatchItems = kboMatch.find("div", class_="hmb_list").find_all("li", class_="hmb_list_items")
+    bot.send_message(id, "[야구 경기 예정]\n")
+    for item in kboMatchItems : 
+            leftItemBox = item.find(class_="vs_list vs_list1").find(class_="inner")
+            global leftScore
+            try :
+                leftScore = leftItemBox.find("div", class_="score").stripped_strings
+                leftScore = ("".join(leftScore))
+            except :
+                leftScore = " "
+            leftName = leftItemBox.find("span", class_="name").text
+            leftPitcher = leftItemBox.find_all("span")[2].text
+
+            rightItemBox = item.find(class_="vs_list vs_list2").find(class_="inner")
+            global rightScore
+            try :
+                rightScore = rightItemBox.find("div", class_="score").stripped_strings
+                rightScore = ("".join(rightScore))
+            except :
+                rightScore = " "
+            rightName = rightItemBox.find("span", class_="name").text
+            rightPitcher = rightItemBox.find_all("span")[2].text
+            bot.send_message(id, f"{leftName}\t (선발 : {leftPitcher})\t {leftScore}\n \tvs\n{rightName}\t (선발 : {rightPitcher})\t {rightScore}")
+            time.sleep(3)
+            
+
+def baseball_result() :
+    url = "https://sports.news.naver.com/kbaseball/index"
+    soup = create_soup(url)
+
+
+    kboMatch = soup.find_all("div", id="_tab_box_kbo")[0]
+    kboMatchItems = kboMatch.find("div", class_="hmb_list").find_all("li", class_="hmb_list_items")
+    bot.send_message(id, "[야구 경기 결과]\n")
+    for item in kboMatchItems : 
+            leftItemBox = item.find(class_="vs_list vs_list1").find(class_="inner")
+            global leftScore
+            try :
+                leftScore = leftItemBox.find("div", class_="score").stripped_strings
+                leftScore = ("".join(leftScore))
+            except :
+                leftScore = " "
+            leftName = leftItemBox.find("span", class_="name").text
+
+            rightItemBox = item.find(class_="vs_list vs_list2").find(class_="inner")
+            global rightScore
+            try :
+                rightScore = rightItemBox.find("div", class_="score").stripped_strings
+                rightScore = ("".join(rightScore))
+            except :
+                rightScore = " "
+            rightName = rightItemBox.find("span", class_="name").text
+            bot.send_message(id, f"{leftName}\t : {leftScore}\n \tvs\n{rightName}\t : {rightScore}")
+            time.sleep(3)
+            
+def football() :
+    url = "https://sports.news.naver.com/wfootball/index"
+    soup = create_soup(url)
+    day = soup.find("span", attrs={"class" : "inner"}).find_all("span", limit=1)
+    for days in day :
+        bot.send_message(eun_id, f"{days.get_text()} 경기 일정") # 08.06(토)
+    
+    Match = soup.find("div", class_ = "hmb_list").find_all("li", class_="hmb_list_items")
+    for Matchs in Match :
+        LeftBox = Matchs.find(class_ ="vs_list vs_list1").find(class_="inner")
+        global LeftScore
+        try :
+            LeftScore = LeftBox.find("div", class_="score").stripped_strings
+            LeftScore = ("".join(LeftScore))
+        except :
+            LeftScore = " "
+        LeftTeam = LeftBox.find("span", class_ = "name").text
+        
+        RightBox = Matchs.find(class_="vs_list vs_list2").find(class_="inner")
+        global RightScore
+        try :
+            RightScore = RightBox.find("div", class_="score").stripped_strings
+            RightScore = ("".join(RightScore))
+        except :
+            RightScore = " "
+        RightTeam = RightBox.find("span", class_ = "name").text
+        Matchtime = Matchs.find(class_="state").text
+        Matchtime = Matchtime.replace("\n", "")
+        bot.send_message(eun_id, text = 
+                        f"(경기시간 : {Matchtime}) \n" +
+                        f"{LeftTeam} : {LeftScore} vs {RightScore} : {RightTeam}")
+        time.sleep(10)
 
 def sports_news() :
     url = "https://sports.news.naver.com/wfootball/index"
@@ -67,45 +163,21 @@ def sports_news() :
     for index, news in enumerate(sports) :
         title = news.find("a").get_text().strip()
         link = world_football_url + news.find("a")['href']
-        bot.send_message(id, text =
+        bot.send_message(eun_id, text =
                          "[오늘의 해외축구] \n" +
                          (f"{index+1}. {title}\n") +
                          (f"    (링크 : {link})")
         )
+        time.sleep(10)
 
-def baseball_match() :
-    url = "https://sports.news.naver.com/kbaseball/index"
-    soup = create_soup(url)
+schedule.every().day.at("05:50:00").do(weather)
+schedule.every().day.at("07:30:00").do(scrap_news)
+schedule.every().day.at("08:0:00").do(sports_news) #Eun
+schedule.every().day.at("16:00:00").do(baseball_match)
+schedule.every().day.at("18:00:00").do(football) #Eun
+schedule.every().day.at("22:30:00").do(baseball_result)
 
 
-    kboMatch = soup.find_all("div", id="_tab_box_kbo")[0]
-    kboMatchItems = kboMatch.find("div", class_="hmb_list").find_all("li", class_="hmb_list_items")
-    bot.send_message(id, "[야구 경기 예정 및 결과]\n")
-    for item in kboMatchItems : 
-            leftItemBox = item.find(class_="vs_list vs_list1").find(class_="inner")
-            global leftScore
-            try :
-                leftScore = leftItemBox.find("div", class_="score").stripped_strings
-                leftScore = ("".join(leftScore))
-            except :
-                leftScore = 0
-            leftName = leftItemBox.find("span", class_="name").text
-            leftPitcher = leftItemBox.find_all("span")[2].text
-
-            rightItemBox = item.find(class_="vs_list vs_list2").find(class_="inner")
-            global rightScore
-            try :
-                rightScore = rightItemBox.find("div", class_="score").stripped_strings
-                rightScore = ("".join(rightScore))
-            except :
-                rightScore = 0
-            rightName = rightItemBox.find("span", class_="name").text
-            rightPitcher = rightItemBox.find_all("span")[2].text
-            bot.send_message(id, f"(선발 : {leftPitcher})\t {leftName}\t {leftScore} vs {rightScore}\t {rightName}\t (선발 : {rightPitcher})")
-            time.sleep(3)
-    
-
-weather()
-scrap_news()
-sports_news()
-print("시작")
+while True :
+    schedule.run_pending()
+    time.sleep(90)
