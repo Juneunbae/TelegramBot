@@ -64,7 +64,6 @@ def baseball_match() :
     url = "https://sports.news.naver.com/kbaseball/index"
     soup = create_soup(url)
 
-
     kboMatch = soup.find_all("div", id="_tab_box_kbo")[0]
     kboMatchItems = kboMatch.find("div", class_="hmb_list").find_all("li", class_="hmb_list_items")
     bot.send_message(id, "[야구 경기 예정]\n")
@@ -118,9 +117,35 @@ def baseball_result() :
             except :
                 rightScore = " "
             rightName = rightItemBox.find("span", class_="name").text
-            bot.send_message(id, f"{leftName}\t : {leftScore}\n \tvs\n{rightName}\t : {rightScore}")
+            bot.send_message(id, f"{leftName}\t : {leftScore} \tvs\t {rightName}\t : {rightScore}")
             time.sleep(3)
             
+def baseball_rank() :
+    rank_url = "https://sports.news.naver.com/kbaseball/record/index?category=kbo"
+    soup = create_soup(rank_url)
+
+    selected = soup.find_all(id="regularTeamRecordList_table")[0]
+
+    rows = selected.find_all("tr")
+    bot.send_message(id, "[야구 순위]\n")
+    for item in rows :
+        # tr
+        bot.send_message(id,
+                item.find_all("th")[0].text + "위 : "  # rank
+                +item.find_all("div")[0].text # team name
+                +"("
+                +"경기수 : "+item.find_all("td")[1].text
+                +"\t승 : "+item.find_all("td")[2].text
+                +"\t패 : "+item.find_all("td")[3].text
+                +"\t무 : "+item.find_all("td")[4].text
+                +"\t승률 : "+item.find_all("td")[5].text
+                +"\t게임차 : "+item.find_all("td")[6].text
+                +"\t연승/연패 : "+item.find_all("td")[7].text
+                +"\t최근10경기 : "+item.find_all("td")[10].text
+                +")\n"
+        )
+        time.sleep(15)
+
 def football() :
     url = "https://sports.news.naver.com/wfootball/index"
     soup = create_soup(url)
@@ -172,12 +197,12 @@ def sports_news() :
 
 schedule.every().day.at("05:50:00").do(weather)
 schedule.every().day.at("07:30:00").do(scrap_news)
-schedule.every().day.at("08:0:00").do(sports_news) #Eun
+schedule.every().day.at("08:00:00").do(sports_news)
 schedule.every().day.at("16:00:00").do(baseball_match)
-schedule.every().day.at("18:00:00").do(football) #Eun
-schedule.every().day.at("22:30:00").do(baseball_result)
-
+schedule.every().day.at("19:30:00").do(football)
+schedule.every().day.at("22:15:00").do(baseball_result)
+schedule.every().sunday.at("22:30:30").do(baseball_rank)
 
 while True :
     schedule.run_pending()
-    time.sleep(90)
+    time.sleep(10)
