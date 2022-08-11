@@ -23,6 +23,7 @@ BeautifulSoup을 사용하여 첫 인자는 '특정 url에서 문제가 없어 �
 
 <hr>
  
+- 날씨 정보를 가져오는 weather 함수를 대표적인 예시로 들며 구성요소를 설명드리겠습니다. 
 
 ```
 def weather() :
@@ -56,26 +57,26 @@ def weather() :
                     ("[강수량 정보] \n") +
                     (f"{cell_weather}")
     )
-```
-- 날씨 정보를 가져오는 weather 함수를 대표적인 예시로 들며 구성요소를 설명드리겠습니다.  
+``` 
+- 네이버 날씨의 url을 weather함수의 지역변수 url로 지정하였으며, 위에서 만든 create_soup의 인자로 url을 등록해줍니다. 
 ```
 url = "https://search.naver.com/search.naver?where=nexearch&sm=top_sug.asiw&fbm=1&acr=1&acq=%EC%84%9C%EC%9A%B8&qdt=0&ie=utf8&acir=1&query=%EC%84%9C%EC%9A%B8+%EB%82%A0%EC%94%A8"
 soup = create_soup(url)
 ```
-네이버 날씨의 url을 weather함수의 지역변수 url로 지정하였으며, 위에서 만든 create_soup의 인자로 url을 등록해줍니다. 
+- 가져올 데이터를 find, find_all 방식으로 태그 요소와 속성을 중점적으로 찾을 수 있습니다.  
+  soup의 find 함수를 사용하여 **'p 태그 요소'와 'p 태그 속성에 해당하는 class'** 를 찾아 (.get_text())를 사용하여 텍스트만 가져옵니다.  
+  cast를 출력해보면 많은 공백과 텍스트로 출력되어, replace 함수를 사용하여 공백을 없애 보기좋게 했습니다.
 ```
 cast = soup.find("p", attrs={"class" : "summary"}).get_text()
 cast = cast.replace("  "," ")
 ```
-가져올 데이터를 find, find_all 방식으로 태그 요소와 속성을 중점적으로 찾을 수 있습니다.  
-soup의 find 함수를 사용하여 **'p 태그 요소'와 'p 태그 속성에 해당하는 class'** 를 찾아 (.get_text())를 사용하여 텍스트만 가져옵니다.  
-cast를 출력해보면 많은 공백과 텍스트로 출력되어, replace 함수를 사용하여 공백을 없애 보기좋게 했습니다.  
+- token 값에 저의 텔레그램 봇 값을 넣고, id에는 만든 채널의 링크를 넣습니다.
 ```
 bot = telegram.Bot(token = "5433279502:AAF1snTj1bPTAjLwYj5BFfvgsZKDvN7tT84")
 id = '@AlarmBotmadeEunbae'
 eun_id = 5085254544
 ```
-token 값에 저의 텔레그램 봇 값을 넣고, id에는 만든 채널의 링크를 넣습니다.
+- bot.send_message 모듈을 활용하여, 보낼 id 값을 넣고, 보낼 텍스트를 text 변수를 통하여 메시지를 보냅니다.
 ```
 bot.send_message(id, text=
                     "[오늘의 날씨 알려드립니다.] \n"  +
@@ -86,4 +87,3 @@ bot.send_message(id, text=
                     ("[강수량 정보] \n") +
                     (f"{cell_weather}")
 ```
-bot.send_message 모듈을 활용하여, 보낼 id 값을 넣고, 보낼 텍스트를 text 변수를 통하여 메시지를 보냅니다.
